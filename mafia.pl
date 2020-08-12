@@ -1,4 +1,4 @@
-% SOLUCIÓN Y TESTS AQUÍ
+%% SOLUCIÓN Y TESTS AQUÍ
 
 rol(homero, civil).
 rol(burns, civil).
@@ -204,7 +204,7 @@ completamente inversibles (como el último mencionado), muchas veces no es neces
 imbatible/1 sí es completamente inversible (obviamente que esperamos de él esta característica).
 
 Para el caso del resto de las personas que no son imbatibles, se tiene en cuenta el principio de universo cerrado, tomando así como falso a todo aquello
-que no se pueda inferir como verdadero a partir la base de conocimientos. Relacionando este concepto con el de inversibilidad, se puede observar que por
+que no se pueda inferir como verdadero a partir la base .de conocimientos Relacionando este concepto con el de inversibilidad, se puede observar que por
 ejemplo no se podría saber cuáles son aquellas personas que no son imbatibles a través de la consulta not(imbatible(Persona)). ya que la misma retornaría
 false. debido a que el predicado not/1 no es inversible. De hecho, al no figurar en la base de conocimientos aquellas personas que no son imbatibles, por
 el principio de universo cerrado, las mismas son infinitas (en realidad cualquier átomo o número por ejemplo que no sea un individuo perteneciente a
@@ -232,10 +232,60 @@ test(un_detective_que_no_investigo_a_todas_las_personas_que_pertenecen_a_la_mafi
 
 test(un_civil_nunca_es_imbatible, fail) :- imbatible(homero).
 
-% Consulta existencial (prueba de inversibilidad):
+% Consulta existonsulta existencial (prueba de inversibilidad):
 
 test(quienes_son_imbatibles, set(Persona = [hibbert, lisa])) :- imbatible(Persona).
 
 end_tests(personas_imbatibles).
+
+
+% Ejercicio 4: más info.
+
+% a).
+
+% Consideramos que no hay repetición de lógica, ya que los predicados que se utilizan como condición son distintos (perdio/2 y ronda/2)
+sigueEnJuego(Ronda, Jugador):-
+    perdio(Jugador, RondaEnLaQuePerdio),
+    ronda(Ronda, _),
+    Ronda =< RondaEnLaQuePerdio.
+
+% Hay que agregar la posibilidad de que un jugador siga en juego si nunca perdió: que no pierda en una ronda no implica que no siga en juego en esa ronda (es lo que pasa con maggie).
+sigueEnJuego(Ronda, Jugador):-
+    ronda(Ronda, _),
+    gano(Jugador).
+
+% d). Punto a
+
+:-begin_tests(siguen_en_juego).
+
+% Consultas individuales:
+
+test(una_persona_sigue_en_juego_en_una_ronda_por_mas_que_luego_pierda_en_dicha_ronda, nondet) :- sigueEnJuego(2, rafa).
+
+test(una_persona_no_sigue_en_juego_en_una_ronda_si_perdio_en_una_ronda_anterior_a_la_misma, fail) :- sigueEnJuego(4, nick).
+
+test(todas_las_personas_que_llegan_a_la_ultima_ronda_son_aquellas_que_no_perdieron_en_una_ronda_anterior_o_ganan_el_juego, set(Jugador = [maggie, burns])) :- sigueEnJuego(6, Jugador).
+
+test(todas_las_personas_siguen_en_juego_en_la_primera_ronda, set(Jugador = [homero, burns, bart, tony, maggie, nick, hibbert, lisa, rafa])) :- sigueEnJuego(1, Jugador).
+
+% Consulta existencial (prueba de inversibilidad):
+
+test(sigue_en_juego_es_completamente_inversible, set((Ronda, Jugador) = [(1, nick), (1, rafa), (2, rafa), (1, hibbert), (2, hibbert), (3, hibbert), (1, tony), (2, tony), (3, tony), (4, tony), (1, bart), (2, bart), (3, bart), (4, bart), (5, bart), (1, homero), (2, homero), (3, homero), (4, homero), (1, lisa), (2, lisa), (3, lisa), (4, lisa), (5, lisa), (1, burns), (2, burns), (3, burns), (4, burns), (5, burns), (6, burns), (1, maggie), (2, maggie), (3, maggie), (4, maggie), (5, maggie), (6, maggie)])) :- sigueEnJuego(Ronda, Jugador).
+
+end_tests(siguen_en_juego).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
