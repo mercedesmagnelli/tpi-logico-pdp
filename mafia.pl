@@ -274,12 +274,44 @@ test(sigue_en_juego_es_completamente_inversible, set((Ronda, Jugador) = [(1, nic
 
 end_tests(siguen_en_juego).
 
+/* 
+Conocer cuáles son las rondas interesantes que tuvo la partida. 
+Una ronda es interesante si en dicha ronda siguen más de 7 personas en juego. 
+También es interesante cuando quedan en juego menos o igual cantidad de personas que la 
+cantidad inicial de la mafia.
 
+ */
 
+rondaInteresante(Ronda):-
+    %cantidad personas en juego > 7
+    ronda(Ronda, _),
+    cantidadJugadoresEnJuegoEnRonda(Ronda, Cantidad),
+    evaluarSegunCantidad(Cantidad).
 
+cantidadJugadoresEnJuegoEnRonda(Ronda, Cantidad) :-
+    %hay que limpiar la lista para evitar repetidos -> falsos verdaderos
+    findall(Jugador,distinct(sigueEnJuego(Ronda, Jugador)), ListaJugadoresEnJuego),
+    length(ListaJugadoresEnJuego, Cantidad).
 
+evaluarSegunCantidad(Cantidad):-
+    Cantidad > 7.
 
+evaluarSegunCantidad(Cantidad):-
+    findall(JugadorMafioso, rol(JugadorMafioso, mafia), ListaMafiosos),
+    length(ListaMafiosos, CantidadMafiosos), 
+    Cantidad =< CantidadMafiosos.
 
+:-begin_tests(rondas_interesantes).
+
+test(una_ronda_con_mas_de_7_personas_en_juego_es_interesante, nondet):- rondaInteresante(1).
+
+test(una_ronda_donde_hay_mas_integrantes_de_la_mafia_que_jugadores_es_interesante, nondet):- rondaInteresante(6).
+
+test(una_ronda_con_7_jugadores_o_menos_no_es_interesante, fail):- rondaInteresante(3).
+
+test(rondas_interesante_es_inversible, set(Ronda = [1,2,6])) :- rondaInteresante(Ronda).
+
+end_tests(rondas_interesantes).
 
 
 
