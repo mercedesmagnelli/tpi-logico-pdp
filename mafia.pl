@@ -2,7 +2,7 @@
 
 % Integrante 1: Mercedes.
 % Integrante 2: Matías.
-
+rol(rafa, detective).
 rol(homero, civil).
 rol(burns, civil).
 rol(bart, mafia).
@@ -11,7 +11,7 @@ rol(maggie, mafia).
 rol(nick, medico).
 rol(hibbert, medico).
 rol(lisa, detective).
-rol(rafa, detective).
+
 
 % Ejercicio 1: rondas
 
@@ -389,30 +389,42 @@ end_tests(vivieron_el_peligro).
 
 % a).
 
+/* accion(atacado(Alguien)):-
+    ronda(_, atacado(Alguien)).
+
+accion(investiga(Jugador, Contrincante)):-
+    ronda(_, investiga(Jugador, Contrincante)). 
+
+accion(eliminado(Alguien)):-
+    ronda(_, eliminado(Alguien)).
+ */
+
+% (contrincante(Jugador, Contrincante), fueResponsableDe(Jugador, Accion, Contrincante))
+
+
 jugadorProfesional(Jugador):-
     esJugador(Jugador),
     forall(contrincante(Jugador, Contrincante), fueResponsableDe(Jugador, _, Contrincante)).
 
+    %paratodo(accion que hizo el jugador, el reeceptor de la accion es su contrincante)
 fueResponsableDe(Jugador, atacado(Contrincante), Contrincante):-
-    ronda(_, atacado(Contrincante)),
+    %ronda(_, atacado(Contrincante)),
     mafioso(Jugador).
     /*rol(Contrincante, Rol),
     Rol \= mafia.*/ % Consideramos que es innecesario, pues entre miembros de la mafia no se atacan (deducido a partir de la base de conocimientos). Lo mismo ocurrirá con salva(Jugador, Contrincante).
-
+ 
 fueResponsableDe(Jugador, investiga(Jugador, Contrincante), Contrincante):-
-    ronda(_, investiga(Jugador, Contrincante)).
+    %investigo(Jugador, Contrincante).
+    imbatible(Jugador).
 
-% Ya es suficiente porque en linea 394 ya se está considerando que la acción realizada por el Jugador es HACIA un Contrincante. 
+/* Funciona pero no sabemos por qué y si lo hacemos de otra forma, nos da rafa que no debería.
+   Consideramos que imbatible/1 es similar a fueResponsableDe/3, 
+ */
 
 fueResponsableDe(_, eliminado(Contrincante), Contrincante):-
-    ronda(_, eliminado(Contrincante)). 
+    ronda(_, eliminado(Contrincante)).
 
-%los de la mafia son siempre profesionales 
-
-
-
-
-
+% Los de la mafia son siempre profesionales 
 
 
 
