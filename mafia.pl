@@ -58,15 +58,15 @@ ronda(6, atacado(burns)).
 
 % b).
 
-perdio(Persona, Ronda):-
-    ronda(Ronda, eliminado(Persona)). % Ya va a ser inversible, pues son hechos.
+perdio(Jugador, Ronda):-
+    ronda(Ronda, eliminado(Jugador)). % Ya va a ser inversible, pues son hechos.
 
-perdio(Persona, Ronda) :-
-    ronda(Ronda, atacado(Persona)), 
-    not(salvadoEnLaRonda(Ronda, Persona)).
+perdio(Jugador, Ronda) :-
+    ronda(Ronda, atacado(Jugador)), 
+    not(salvadoEnLaRonda(Ronda, Jugador)).
 
-salvadoEnLaRonda(Ronda, Persona):- % VER SI DESPUES SE NECESITA SABER QUIEN SALVO A QUIEN
-    ronda(Ronda, salva(_, Persona)).
+salvadoEnLaRonda(Ronda, Jugador):- % VER SI DESPUES SE NECESITA SABER QUIEN SALVO A QUIEN
+    ronda(Ronda, salva(_, Jugador)).
 
 % El concepto utilizado para resolver este requerimiento es el de functor, lo que nos permitirá a futuro aplicar soluciones polimórficas.
 
@@ -86,11 +86,11 @@ test(una_persona_pierde_en_una_ronda_si_lo_eliminan_aunque_lo_salve_un_medico, n
 
 test(una_persona_que_nunca_fue_eliminada_ni_atacada_no_perdio_en_ninguna_ronda, fail):- perdio(maggie, _).
 
-test(en_una_ronda_puede_perder_mas_de_una_persona, set(Persona = [bart, lisa])):- perdio(Persona, 5).
+test(en_una_ronda_puede_perder_mas_de_una_persona, set(Jugador = [bart, lisa])):- perdio(Jugador, 5).
 
 % Consulta existencial (prueba de inversibilidad):
 
-test(perdio_es_completamente_inversible, set((Persona, Ronda) = [(nick, 1) ,(rafa, 2), (hibbert, 3), (tony, 4), (homero, 4), (bart, 5), (lisa, 5), (burns, 6)])):- perdio(Persona, Ronda).
+test(perdio_es_completamente_inversible, set((Jugador, Ronda) = [(nick, 1) ,(rafa, 2), (hibbert, 3), (tony, 4), (homero, 4), (bart, 5), (lisa, 5), (burns, 6)])):- perdio(Jugador, Ronda).
 
 :- end_tests(perdedores).
 
@@ -170,7 +170,7 @@ imbatible(Medico):-
 
 imbatible(Detective):-
     detective(Detective),
-    forall(rol(Persona, mafia), investigo(Detective, Persona)).
+    forall(mafioso(Jugador), investigo(Detective, Jugador)).
 
 rondaAnteriorOIgualEnLaQueFueEliminado(Ronda, Medico):-
     ronda(RondaEliminado, eliminado(Medico)),
@@ -179,44 +179,47 @@ rondaAnteriorOIgualEnLaQueFueEliminado(Ronda, Medico):-
     
 fueImbatible(Medico, Ronda):-
     ronda(Ronda, _),
-    forall(personaAtacadaNoSalvadaPorOtroMedico(Persona, Medico, Ronda), salvo(Medico, Persona, Ronda)).
+    forall(jugadorAtacadoNoSalvadoPorOtroMedico(Jugador, Medico, Ronda), salvo(Medico, Jugador, Ronda)).
 
-personaAtacadaNoSalvadaPorOtroMedico(Persona, Medico, Ronda):-
-    ronda(Ronda, atacado(Persona)),
+jugadorAtacadoNoSalvadoPorOtroMedico(Jugador, Medico, Ronda):-
+    ronda(Ronda, atacado(Jugador)),
     medico(OtroMedico),
     OtroMedico \= Medico, % No habrá problemas de inversibilidad, pues la variable Medico ya viene ligada y el predicado sólo se usa en fueImbatible/2.
-    not(ronda(Ronda, salvo(OtroMedico, Persona))).
+    not(ronda(Ronda, salvo(OtroMedico, Jugador))).
 
-medico(Persona):-
-    rol(Persona, medico).
+medico(Jugador):-
+    rol(Jugador, medico).
 
-detective(Persona):-
-    rol(Persona, detective).
+detective(Jugador):-
+    rol(Jugador, detective).
 
-salvo(Medico, Persona, Ronda):-
-    ronda(Ronda, salva(Medico, Persona)).
+mafioso(Jugador):-
+    rol(Jugador, mafia).
 
-investigo(Detective, Persona):-
-    ronda(_, investiga(Detective, Persona)).
+salvo(Medico, Jugador, Ronda):-
+    ronda(Ronda, salva(Medico, Jugador)).
+
+investigo(Detective, Jugador):-
+    ronda(_, investiga(Detective, Jugador)).
 
 /*
 El concepto de inversibilidad está presente en ciertos predicados y en otros no (especialmente el concepto de predicado completamente inversible). Esto
-se da por ejemplo, con los predicados imbatible/1 y personaAtacadaNoSalvadaPorOtroMedico/3 respectivamente. Para el caso de los predicados no 
+se da por ejemplo, con los predicados imbatible/1 y jugadorAtacadoNoSalvadoPorOtroMedico/3 respectivamente. Para el caso de los predicados no 
 completamente inversibles (como el último mencionado), muchas veces no es necesario que posean dicha característica, ya que como se explicó en la línea
 184, es un predicado que se utiliza como condición de una regla en la que las variables ya están ligadas al "ingresar" al mismo. En cambio, el predicado
 imbatible/1 sí es completamente inversible (obviamente que esperamos de él esta característica).
 
 Para el caso del resto de las personas que no son imbatibles, se tiene en cuenta el principio de universo cerrado, tomando así como falso a todo aquello
 que no se pueda inferir como verdadero a partir la base .de conocimientos Relacionando este concepto con el de inversibilidad, se puede observar que por
-ejemplo no se podría saber cuáles son aquellas personas que no son imbatibles a través de la consulta not(imbatible(Persona)). ya que la misma retornaría
+ejemplo no se podría saber cuáles son aquellas personas que no son imbatibles a través de la consulta not(imbatible(Jugador)). ya que la misma retornaría
 false. debido a que el predicado not/1 no es inversible. De hecho, al no figurar en la base de conocimientos aquellas personas que no son imbatibles, por
 el principio de universo cerrado, las mismas son infinitas (en realidad cualquier átomo o número por ejemplo que no sea un individuo perteneciente a
 la base de conocimientos no será imbatible), salvo que se cree un predicado específico para ello acotando el universo de las personas y así poder obtener
 aquellas que no son imbatibles. El mismo podría desarrollarse de la siguiente manera:
 
-noImbatible(Persona):-
-    esJugador(Persona),
-    not(imbatible(Persona)).
+noImbatible(Jugador):-
+    esJugador(Jugador),
+    not(imbatible(Jugador)).
 */
 
 % b). Casos de prueba
@@ -237,7 +240,7 @@ test(un_civil_nunca_es_imbatible, fail) :- imbatible(homero).
 
 % Consulta existencial (prueba de inversibilidad):
 
-test(quienes_son_imbatibles, set(Persona = [hibbert, lisa])) :- imbatible(Persona).
+test(quienes_son_imbatibles, set(Jugador = [hibbert, lisa])) :- imbatible(Jugador).
 
 end_tests(personas_imbatibles).
 
@@ -328,8 +331,8 @@ esCivilODetective(Jugador):-
 esCivilODetective(Jugador):-
     detective(Jugador).
 
-civil(Persona):-
-    rol(Persona, civil).
+civil(Jugador):-
+    rol(Jugador, civil).
 
 jugoRonda(Jugador, Ronda):-
     ronda(Ronda, atacado(Jugador)).
@@ -352,7 +355,7 @@ jugoRonda(Jugador, Ronda):-
 rondaPeligrosa(Ronda):-
     cantidadJugadoresEnJuegoEnRonda(Ronda, CantidadDePersonasEnJuego),
     cantidadDe(civil, CantidadCiviles),
-    CantidadDePersonasEnJuego is (3 * CantidadCiviles).
+    CantidadDePersonasEnJuego is 3 * CantidadCiviles.
 
 % d). Punto c
 
@@ -381,4 +384,56 @@ Ergo, como Burns juega sólo en las rondas 3 y 6, Burns no vivió el peligro.
 */
 
 end_tests(vivieron_el_peligro).
+
+% Ejercicio 5: estrategia.
+
+% a).
+
+jugadorProfesional(Jugador):-
+    esJugador(Jugador),
+    forall(contrincante(Jugador, Contrincante), fueResponsableDe(Jugador, _, Contrincante)).
+
+fueResponsableDe(Jugador, atacado(Contrincante), Contrincante):-
+    ronda(_, atacado(Contrincante)),
+    mafioso(Jugador).
+    /*rol(Contrincante, Rol),
+    Rol \= mafia.*/ % Consideramos que es innecesario, pues entre miembros de la mafia no se atacan (deducido a partir de la base de conocimientos). Lo mismo ocurrirá con salva(Jugador, Contrincante).
+
+fueResponsableDe(Jugador, investiga(Jugador, Contrincante), Contrincante):-
+    ronda(_, investiga(Jugador, Contrincante)).
+
+% Ya es suficiente porque en linea 394 ya se está considerando que la acción realizada por el Jugador es HACIA un Contrincante. 
+
+fueResponsableDe(_, eliminado(Contrincante), Contrincante):-
+    ronda(_, eliminado(Contrincante)). 
+
+%los de la mafia son siempre profesionales 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
