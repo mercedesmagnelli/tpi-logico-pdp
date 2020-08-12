@@ -87,17 +87,64 @@ test(una_persona_pierde_en_una_ronda_si_lo_eliminan_aunque_lo_salve_un_medico, n
 
 test(una_persona_que_nunca_fue_eliminada_ni_atacada_no_perdio_en_ninguna_ronda, fail):- perdio(maggie, _).
 
+test(en_una_ronda_puede_perder_mas_de_una_persona, set(Persona = [bart, lisa])):- perdio(Persona, 5).
+
 % Consulta existencial (prueba de inversibilidad):
 
-test(en_una_ronda_puede_perder_mas_de_una_persona, set(Persona = [bart, lisa])):- perdio(Persona, 5).
+test(perdio_es_completamente_inversible, set((Persona, Ronda) = [(nick, 1) ,(rafa, 2), (hibbert, 3), (tony, 4), (homero, 4), (bart, 5), (lisa, 5), (burns, 6)])):- perdio(Persona, Ronda).
 
 :- end_tests(perdedores).
 
+% GANADOR 
 
+% Ejercicio 2. 
 
+/* 
+Conocer los contrincantes de una persona, o sea, los del otro bando. 
+Si la persona pertenece a la mafia, los contrincantes son todos aquellos 
+que no forman parte de la mafia; y viceversa. Esta relación debe ser simétrica.
+ */
+contrincante(Jugador, Contrincante):- sonContrincantes(Jugador, Contrincante).
+contrincante(Jugador, Contrincante):- sonContrincantes(Contrincante, Jugador).
 
+sonContrincantes(Jugador, Contrincante):-
+    rol(Jugador, mafia),
+    rol(Contrincante, RolContrincante),
+    RolContrincante \= mafia. 
 
+gano(Jugador):-
+    esJugador(Jugador),
+    not(perdio(Jugador, _)), %no existe al menos una ronda en la que haya perdido (involucion not)
+    %not(perdio(Jugador, _)) puede ser hecho con un forall pero es mas sencillo x la involucion
+    forall(contrincante(Jugador, Contrincante), perdio(Contrincante, _)).
 
+esJugador(Jugador):-
+    rol(Jugador, _).
+
+/* 
+ preguntar lo de la inversibilidad
+*/
+
+:- begin_tests(contrincantes).
+
+test(un_miembro_de_la_mafia_no_es_contrincante_de_otro_miembro_de_la_mafia, fail) :- contrincante(tony, maggie).
+
+test(un_miembro_de_la_mafia_es_contrincante_de_un_jugador_que_no_es_miembro_de_la_mafia, nondet) :- contrincante(homero, bart).
+
+%falta probar inversibilidad -> muy largo 
+%test(contrincantes_es_inversible, ) :- .
+:- end_tests(contrincantes).
+
+:-begin_tests(gano).
+
+test(un_jugador_gana_cuando_no_pierde_ninguna_ronda_y_todos_sus_contrincantes_si, nondet) :- gano(maggie).
+
+test(un_jugador_no_gana_cuando_pierde_al_menos_una_ronda, fail) :- gano(nick).
+
+% rari: test(un_jugador_no_gana_cuando_no_pierde_ninguna_ronda_pero_sus_contrincantes_no_pierden, fail) :-gano().
+test(gano_es_inversible, set(Jugador = [maggie])) :- gano(Jugador).
+
+end_tests(gano).
 
 /* 
 :- begin_tests(nombre).
