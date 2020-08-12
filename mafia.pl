@@ -200,7 +200,7 @@ investigo(Detective, Persona):-
 El concepto de inversibilidad está presente en ciertos predicados y en otros no (especialmente el concepto de predicado completamente inversible). Esto
 se da por ejemplo, con los predicados imbatible/1 y personaAtacadaNoSalvadaPorOtroMedico/3 respectivamente. Para el caso de los predicados no 
 completamente inversibles (como el último mencionado), muchas veces no es necesario que posean dicha característica, ya que como se explicó en la línea
-174, es un predicado que se utiliza como condición de una regla en la que las variables ya están ligadas al "ingresar" al mismo. En cambio, el predicado
+184, es un predicado que se utiliza como condición de una regla en la que las variables ya están ligadas al "ingresar" al mismo. En cambio, el predicado
 imbatible/1 sí es completamente inversible (obviamente que esperamos de él esta característica).
 
 Para el caso del resto de las personas que no son imbatibles, se tiene en cuenta el principio de universo cerrado, tomando así como falso a todo aquello
@@ -274,32 +274,31 @@ test(sigue_en_juego_es_completamente_inversible, set((Ronda, Jugador) = [(1, nic
 
 end_tests(siguen_en_juego).
 
-/* 
-Conocer cuáles son las rondas interesantes que tuvo la partida. 
-Una ronda es interesante si en dicha ronda siguen más de 7 personas en juego. 
-También es interesante cuando quedan en juego menos o igual cantidad de personas que la 
-cantidad inicial de la mafia.
-
- */
+% b). Mercedes
 
 rondaInteresante(Ronda):-
-    %cantidad personas en juego > 7
-    ronda(Ronda, _),
     cantidadJugadoresEnJuegoEnRonda(Ronda, Cantidad),
     evaluarSegunCantidad(Cantidad).
 
 cantidadJugadoresEnJuegoEnRonda(Ronda, Cantidad) :-
-    %hay que limpiar la lista para evitar repetidos -> falsos verdaderos
-    findall(Jugador,distinct(sigueEnJuego(Ronda, Jugador)), ListaJugadoresEnJuego),
+    % Hay que limpiar la lista para evitar repetidos -> falsos verdaderos
+    ronda(Ronda, _),
+    findall(Jugador, distinct(sigueEnJuego(Ronda, Jugador)), ListaJugadoresEnJuego),
     length(ListaJugadoresEnJuego, Cantidad).
 
 evaluarSegunCantidad(Cantidad):-
     Cantidad > 7.
 
 evaluarSegunCantidad(Cantidad):-
-    findall(JugadorMafioso, rol(JugadorMafioso, mafia), ListaMafiosos),
-    length(ListaMafiosos, CantidadMafiosos), 
+    cantidadDe(mafia, CantidadMafiosos),
     Cantidad =< CantidadMafiosos.
+
+cantidadDe(Rol, Cantidad):- % No es necesario ligar rol (hacer a cantidadDe/2 inversible), por el mismo motivo explicitado en la línea 184.
+    findall(Jugador, rol(Jugador, Rol), ListaJugadores),
+    length(ListaJugadores, Cantidad).
+
+
+% d). Punto b
 
 :-begin_tests(rondas_interesantes).
 
@@ -313,11 +312,50 @@ test(rondas_interesante_es_inversible, set(Ronda = [1,2,6])) :- rondaInteresante
 
 end_tests(rondas_interesantes).
 
+% c). Matías
 
+vivioElPeligro(Jugador):-
+    esCivilODetective(Jugador),
+    jugoRonda(Jugador, Ronda),
+    rondaPeligrosa(Ronda).
 
+esCivilODetective(Jugador):-
+    civil(Jugador).
 
+esCivilODetective(Jugador):-
+    detective(Jugador).
 
+civil(Persona):-
+    rol(Persona, civil).
 
+jugoRonda(Jugador, Ronda):-
+    ronda(Ronda, atacado(Jugador)).
 
+jugoRonda(Jugador, Ronda):-
+    ronda(Ronda, investiga(Jugador, _)).
+
+jugoRonda(Jugador, Ronda):-
+    ronda(Ronda, investiga(_, Jugador)).
+
+jugoRonda(Jugador, Ronda):-
+    ronda(Ronda, salva(Jugador, _)).
+
+jugoRonda(Jugador, Ronda):-
+ronda(Ronda, salva(_, Jugador)).
+
+jugoRonda(Jugador, Ronda):-
+    ronda(Ronda, eliminado(Jugador)).
+
+rondaPeligrosa(Ronda):-
+    cantidadJugadoresEnJuegoEnRonda(Ronda, CantidadDePersonasEnJuego),
+    cantidadDe(civil, CantidadCiviles),
+    CantidadDePersonasEnJuego is (3 * CantidadCiviles).
+
+/* 
+La única ronda peligrosa es la ronda 4.
+La cantidad de personas en juego en la ronda 6 es 2, y la cantidad de civiles iniciales es 2. Luego, 2 no es 3 * 2. Entonces la ronda 6 no es peligrosa.
+La cantidad de personas en juego en la ronda 3 es 7, y la cantidad de civiles iniciales es 2. Luego, 7 no es 3 * 2. Entonces la ronda 3 no es peligrosa.
+Ergo, como Burns juega sólo en las rondas 3 y 6, Burns no vivió el peligro.
+*/
 
 
