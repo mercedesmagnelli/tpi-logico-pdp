@@ -1,5 +1,8 @@
 %% SOLUCIÓN Y TESTS AQUÍ
 
+% Integrante 1: Mercedes.
+% Integrante 2: Matías.
+
 rol(homero, civil).
 rol(burns, civil).
 rol(bart, mafia).
@@ -56,7 +59,7 @@ ronda(6, atacado(burns)).
 % b).
 
 perdio(Persona, Ronda):-
-    ronda(Ronda, eliminado(Persona)). % Ya va a ser inversible, pues son hechos
+    ronda(Ronda, eliminado(Persona)). % Ya va a ser inversible, pues son hechos.
 
 perdio(Persona, Ronda) :-
     ronda(Ronda, atacado(Persona)), 
@@ -111,8 +114,8 @@ sonContrincantes(Jugador, Contrincante):-
 
 gano(Jugador):-
     esJugador(Jugador),
-    not(perdio(Jugador, _)), % No existe al menos una ronda en la que haya perdido (involución del not)
-    %not(perdio(Jugador, _)) puede ser hecho con un forall pero es mas sencillo por la involución
+    not(perdio(Jugador, _)), % No existe al menos una ronda en la que haya perdido (involución de la negación).
+    % not(perdio(Jugador, _)) puede ser hecho con un forall pero es más sencillo por la involución. 
     forall(contrincante(Jugador, Contrincante), perdio(Contrincante, _)).
 
 esJugador(Jugador):-
@@ -232,7 +235,7 @@ test(un_detective_que_no_investigo_a_todas_las_personas_que_pertenecen_a_la_mafi
 
 test(un_civil_nunca_es_imbatible, fail) :- imbatible(homero).
 
-% Consulta existonsulta existencial (prueba de inversibilidad):
+% Consulta existencial (prueba de inversibilidad):
 
 test(quienes_son_imbatibles, set(Persona = [hibbert, lisa])) :- imbatible(Persona).
 
@@ -243,7 +246,7 @@ end_tests(personas_imbatibles).
 
 % a).
 
-% Consideramos que no hay repetición de lógica, ya que los predicados que se utilizan como condición son distintos (perdio/2 y ronda/2)
+% Consideramos que no hay repetición de lógica, ya que los predicados que se utilizan como condición son distintos (perdio/2 y ronda/2).
 sigueEnJuego(Ronda, Jugador):-
     perdio(Jugador, RondaEnLaQuePerdio),
     ronda(Ronda, _),
@@ -278,22 +281,22 @@ end_tests(siguen_en_juego).
 
 rondaInteresante(Ronda):-
     cantidadJugadoresEnJuegoEnRonda(Ronda, Cantidad),
-    evaluarSegunCantidad(Cantidad).
+    cantidadParaQueUnaRondaSeaInteresante(Cantidad).
 
 cantidadJugadoresEnJuegoEnRonda(Ronda, Cantidad) :-
-    % Hay que limpiar la lista para evitar repetidos -> falsos verdaderos
+    % Hay que "limpiar" la lista para evitar repetidos -> falsos verdaderos
     ronda(Ronda, _),
     findall(Jugador, distinct(sigueEnJuego(Ronda, Jugador)), ListaJugadoresEnJuego),
     length(ListaJugadoresEnJuego, Cantidad).
 
-evaluarSegunCantidad(Cantidad):-
+cantidadParaQueUnaRondaSeaInteresante(Cantidad):-
     Cantidad > 7.
 
-evaluarSegunCantidad(Cantidad):-
+cantidadParaQueUnaRondaSeaInteresante(Cantidad):-
     cantidadDe(mafia, CantidadMafiosos),
     Cantidad =< CantidadMafiosos.
 
-cantidadDe(Rol, Cantidad):- % No es necesario ligar rol (hacer a cantidadDe/2 inversible), por el mismo motivo explicitado en la línea 184.
+cantidadDe(Rol, Cantidad):- % No es necesario ligar la variable Rol (hacer a cantidadDe/2 inversible), por el mismo motivo explicitado en la línea 184.
     findall(Jugador, rol(Jugador, Rol), ListaJugadores),
     length(ListaJugadores, Cantidad).
 
@@ -351,11 +354,31 @@ rondaPeligrosa(Ronda):-
     cantidadDe(civil, CantidadCiviles),
     CantidadDePersonasEnJuego is (3 * CantidadCiviles).
 
-/* 
+% d). Punto c
+
+:-begin_tests(vivieron_el_peligro).
+
+% Consutlas individuales:
+
+test(un_civil_que_jugo_una_ronda_peligrosa_vivio_el_peligro, nondet):- vivioElPeligro(homero).
+
+test(un_detective_que_jugo_una_ronda_peligrosa_vivio_el_peligro, nondet):- vivioElPeligro(lisa).
+
+test(una_persona_que_no_es_civil_ni_detective_no_vivio_el_peligro, fail):- vivioElPeligro(tony).
+
+test(un_detective_que_no_jugo_una_ronda_peligrosa_no_vivio_el_peligro, fail):- vivioElPeligro(rafa).
+
+% Consulta existencial (prueba de inversibilidad):
+
+test(quienes_vivieron_el_peligro, set(Jugador = [lisa, homero])):- vivioElPeligro(Jugador).
+
+/*
+Aclaración con respecto al último test:
 La única ronda peligrosa es la ronda 4.
 La cantidad de personas en juego en la ronda 6 es 2, y la cantidad de civiles iniciales es 2. Luego, 2 no es 3 * 2. Entonces la ronda 6 no es peligrosa.
 La cantidad de personas en juego en la ronda 3 es 7, y la cantidad de civiles iniciales es 2. Luego, 7 no es 3 * 2. Entonces la ronda 3 no es peligrosa.
 Ergo, como Burns juega sólo en las rondas 3 y 6, Burns no vivió el peligro.
 */
 
+end_tests(vivieron_el_peligro).
 
