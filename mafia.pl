@@ -389,42 +389,58 @@ end_tests(vivieron_el_peligro).
 
 % a).
 
-/* accion(atacado(Alguien)):-
-    ronda(_, atacado(Alguien)).
-
-accion(investiga(Jugador, Contrincante)):-
-    ronda(_, investiga(Jugador, Contrincante)). 
-
-accion(eliminado(Alguien)):-
-    ronda(_, eliminado(Alguien)).
- */
-
-% (contrincante(Jugador, Contrincante), fueResponsableDe(Jugador, Accion, Contrincante))
-
-
 jugadorProfesional(Jugador):-
     esJugador(Jugador),
-    forall(contrincante(Jugador, Contrincante), fueResponsableDe(Jugador, _, Contrincante)).
+    forall(contrincante(Jugador, Contrincante), responsable(Jugador, _, Contrincante)).
 
-    %paratodo(accion que hizo el jugador, el reeceptor de la accion es su contrincante)
-fueResponsableDe(Jugador, atacado(Contrincante), Contrincante):-
-    %ronda(_, atacado(Contrincante)),
+responsable(Jugador, atacado(Contrincante), Contrincante):-
     mafioso(Jugador).
     /*rol(Contrincante, Rol),
     Rol \= mafia.*/ % Consideramos que es innecesario, pues entre miembros de la mafia no se atacan (deducido a partir de la base de conocimientos). Lo mismo ocurrirá con salva(Jugador, Contrincante).
  
-fueResponsableDe(Jugador, investiga(Jugador, Contrincante), Contrincante):-
+responsable(Jugador, investiga(Jugador, Contrincante), Contrincante):-
+    ronda(_, investiga(Jugador, Contrincante)).
     %investigo(Jugador, Contrincante).
     imbatible(Jugador).
 
 /* Funciona pero no sabemos por qué y si lo hacemos de otra forma, nos da rafa que no debería.
-   Consideramos que imbatible/1 es similar a fueResponsableDe/3, 
+   Consideramos que imbatible/1 es similar a responsable/3, 
  */
 
-fueResponsableDe(_, eliminado(Contrincante), Contrincante):-
-    ronda(_, eliminado(Contrincante)).
+responsable(Jugador, eliminado(Contrincante), Contrincante):-
+    contrincante(Jugador, Contrincante).
+
+/* responsable(Medico, salva(Medico, Jugador), Jugador):-
+    ronda(_, salva(Medico, Jugador)). */
 
 % Los de la mafia son siempre profesionales 
+
+% b). 
+
+afectado(Jugador, Accion, OtroJugador):-
+    responsable(OtroJugador, Accion, Jugador).
+
+estrategia(Estrategia):-
+    findall(Accion, formaParteDeLaEstrategia(Accion), Estrategia).
+
+formaParteDeLaEstrategia(Accion):-
+    jugoRonda(Jugador, Ronda),
+    afectado(Jugador, Accion, OtroJugador),
+    jugoRonda(OtraRonda, OtroJugador), 
+    OtraRonda is Ronda - 1.
+
+formaParteDeLaEstrategia(Accion):-
+    jugoRonda(1, Jugador),
+    responsable(Jugador, Accion, OtroJugador),
+    jugoRonda(2, OtroJugador).
+
+formaParteDeLaEstrategia(Accion):-
+    jugoRonda(6, Jugador),
+    afectado(Jugador, Accion, OtroJugador),
+    jugoRonda(5, OtroJugador).
+
+
+
 
 
 
