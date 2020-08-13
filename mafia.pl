@@ -2,6 +2,7 @@
 
 % Integrante 1: Mercedes.
 % Integrante 2: Matías.
+
 rol(rafa, detective).
 rol(homero, civil).
 rol(burns, civil).
@@ -64,14 +65,9 @@ perdio(Jugador, Ronda):-
 perdio(Jugador, Ronda) :-
     ronda(Ronda, atacado(Jugador)),
     not(salvo(_, Jugador, Ronda)). 
-    % not(salvadoEnLaRonda(Ronda, Jugador)). %%%%%%%%%%%%%%%%%%%%%%%%% descomentar y comentar línea anterior %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 salvo(Medico, Jugador, Ronda):-
     ronda(Ronda, salva(Medico, Jugador)).
-
-/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%CORREGIDO (se puede descartar)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-salvadoEnLaRonda(Ronda, Jugador):-
-    ronda(Ronda, salva(_, Jugador)).*/
 
 % El concepto utilizado para resolver este requerimiento es el de functor, lo que nos permitirá a futuro aplicar soluciones polimórficas.
 
@@ -115,7 +111,7 @@ sonContrincantes(Jugador, Contrincante):-
     rol(Contrincante, RolContrincante),
     RolContrincante \= mafia. 
 
-% b).
+% b). %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESPONDER PREGUNTA TEORICA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 gano(Jugador):-
     esJugador(Jugador),
@@ -139,7 +135,6 @@ test(un_miembro_de_la_mafia_es_contrincante_de_un_jugador_que_no_es_miembro_de_l
 % Consulta existencial (prueba de inversibilidad):
 
 %falta probar inversibilidad -> muy largo 
-%test(contrincantes_es_inversible, ) :- .
 :- end_tests(contrincantes).
 
 :-begin_tests(ganadores).
@@ -158,21 +153,16 @@ test(gano_es_inversible, set(Jugador = [maggie])) :- gano(Jugador).
 
 end_tests(ganadores).
 
+% falta justificar 
 
 % Ejercicio 3: imbatibles.
 
 % Integrante 2: Matías
 
 % a).
-/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5CORREGIDO (se puede descartar)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-imbatible(Medico):-
-    medico(Medico),
-    forall(rondaAnteriorOIgualEnLaQueFueEliminado(Ronda, Medico), fueImbatible(Medico, Ronda)).
-*/
 imbatible(Medico):-
     medico(Medico),
     forall(salvo(Medico, Jugador, _), fueAtacado(Jugador)).
-    %forall(salvo(Medico, Jugador), fueAtacado(Jugador)). %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%DESCOMENTAR Y COMENTAR LÍNEA ANTERIOR%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 imbatible(Detective):-
     detective(Detective),
@@ -181,22 +171,6 @@ imbatible(Detective):-
 fueAtacado(Jugador):-
     ronda(_, atacado(Jugador)).
 
-/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%CORREGIDO (se puede descartar)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-rondaAnteriorOIgualEnLaQueFueEliminado(Ronda, Medico):-
-    ronda(RondaEliminado, eliminado(Medico)),
-    ronda(Ronda, _),
-    Ronda =< RondaEliminado.
-    
-fueImbatible(Medico, Ronda):-
-    ronda(Ronda, _),
-    forall(jugadorAtacadoNoSalvadoPorOtroMedico(Jugador, Medico, Ronda), salvo(Medico, Jugador, Ronda)).
-
-jugadorAtacadoNoSalvadoPorOtroMedico(Jugador, Medico, Ronda):-
-    ronda(Ronda, atacado(Jugador)),
-    medico(OtroMedico),
-    OtroMedico \= Medico, % No habrá problemas de inversibilidad, pues la variable Medico ya viene ligada y el predicado sólo se usa en fueImbatible/2.
-    not(ronda(Ronda, salva(OtroMedico, Jugador))).
-*/
 medico(Jugador):-
     rol(Jugador, medico).
 
@@ -206,19 +180,11 @@ detective(Jugador):-
 mafioso(Jugador):-
     rol(Jugador, mafia).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%VER SI USAR ESTE PREDICADO%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-/*salvo(Medico, Jugador, Ronda):-
-    ronda(Ronda, salva(Medico, Jugador)).*/
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Acá creo que no se podría no repetir la forma de generar, pues los individuos (functores) tienen distinta aridad y propósito (es decir, no es como el caso en el que un individuo participe en una acción) %%%%%%%%%%%%%%%%%%%%
-/*salvo(Medico, Jugador):- DESCOMENTAR
-    ronda(_, salva(Medico, Jugador)).*/
-
 investigo(Detective, Jugador, Ronda):-
     ronda(Ronda, investiga(Detective, Jugador)).
 
-/*
+/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MODIFICAR ESTA PARTE DEBIDO A QUE HAY NUEVOS PREDICADOS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 El concepto de inversibilidad está presente en ciertos predicados y en otros no (especialmente el concepto de predicado completamente inversible). Esto
 se da por ejemplo, con los predicados imbatible/1 y jugadorAtacadoNoSalvadoPorOtroMedico/3 respectivamente. Para el caso de los predicados no 
 completamente inversibles (como el último mencionado), muchas veces no es necesario que posean dicha característica, ya que como se explicó en la línea
@@ -226,7 +192,7 @@ completamente inversibles (como el último mencionado), muchas veces no es neces
 imbatible/1 sí es completamente inversible (obviamente que esperamos de él esta característica).
 
 Para el caso del resto de las personas que no son imbatibles, se tiene en cuenta el principio de universo cerrado, tomando así como falso a todo aquello
-que no se pueda inferir como verdadero a partir la base .de conocimientos Relacionando este concepto con el de inversibilidad, se puede observar que por
+que no se pueda inferir como verdadero a partir la base de conocimientos. Relacionando este concepto con el de inversibilidad, se puede observar que por
 ejemplo no se podría saber cuáles son aquellas personas que no son imbatibles a través de la consulta not(imbatible(Jugador)). ya que la misma retornaría
 false. debido a que el predicado not/1 no es inversible. De hecho, al no figurar en la base de conocimientos aquellas personas que no son imbatibles, por
 el principio de universo cerrado, las mismas son infinitas (en realidad cualquier átomo o número por ejemplo que no sea un individuo perteneciente a
@@ -264,19 +230,6 @@ end_tests(personas_imbatibles).
 % Ejercicio 4: más info.
 
 % a).
-
-/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%SE PUEDE ELIMINAR%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Consideramos que no hay repetición de lógica, ya que los predicados que se utilizan como condición son distintos (perdio/2 y ronda/2).
-sigueEnJuego(Ronda, Jugador):-
-    perdio(Jugador, RondaEnLaQuePerdio),
-    ronda(Ronda, _),
-    Ronda =< RondaEnLaQuePerdio.
-
-% Hay que agregar la posibilidad de que un jugador siga en juego si nunca perdió: que no pierda en una ronda no implica que no siga en juego en esa ronda (es lo que pasa con maggie).
-sigueEnJuego(Ronda, Jugador):-
-    ronda(Ronda, _),
-    gano(Jugador).
-*/
 
 sigueEnJuego(Ronda, Jugador):-
     esJugador(Jugador),
@@ -318,7 +271,6 @@ rondaInteresante(Ronda):-
     cantidadParaQueUnaRondaSeaInteresante(Cantidad).
 
 cantidadJugadoresEnJuegoEnRonda(Ronda, Cantidad) :-
-    % Hay que "limpiar" la lista para evitar repetidos -> falsos verdaderos
     ronda(Ronda, _),
     findall(Jugador, distinct(sigueEnJuego(Ronda, Jugador)), ListaJugadoresEnJuego),
     length(ListaJugadoresEnJuego, Cantidad).
@@ -330,7 +282,7 @@ cantidadParaQueUnaRondaSeaInteresante(Cantidad):-
     cantidadDe(mafia, CantidadMafiosos),
     Cantidad =< CantidadMafiosos.
 
-cantidadDe(Rol, Cantidad):- % No es necesario ligar la variable Rol (hacer a cantidadDe/2 inversible), por el mismo motivo explicitado en la línea 184.
+cantidadDe(Rol, Cantidad):- % No es necesario ligar la variable Rol (hacer a cantidadDe/2 inversible).
     findall(Jugador, rol(Jugador, Rol), ListaJugadores),
     length(ListaJugadores, Cantidad).
 
@@ -364,26 +316,6 @@ esCivilODetective(Jugador):-
 
 civil(Jugador):-
     rol(Jugador, civil).
-
-/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%CORREGIDO (se puede descartar)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-jugoRonda(Jugador, Ronda):-
-    ronda(Ronda, atacado(Jugador)).
-
-jugoRonda(Jugador, Ronda):-
-    ronda(Ronda, investiga(Jugador, _)).
-
-jugoRonda(Jugador, Ronda):-
-    ronda(Ronda, investiga(_, Jugador)).
-
-jugoRonda(Jugador, Ronda):-
-    ronda(Ronda, salva(Jugador, _)).
-
-jugoRonda(Jugador, Ronda):-
-ronda(Ronda, salva(_, Jugador)).
-
-jugoRonda(Jugador, Ronda):-
-    ronda(Ronda, eliminado(Jugador)).
-*/
 
 %%%%%%%%%%%%%%%%%%%% VER SI NO SE PUEDEN USAR LOS PREDICADOS DEL PUNTO SIGUIENTE %%%%%%%%%%%%%%%%%%%%
 
@@ -440,26 +372,54 @@ end_tests(vivieron_el_peligro).
 
 % a).
 
-jugadorProfesional(Jugador):-
+/* jugadorProfesional(Jugador):-
     esJugador(Jugador),
     forall(contrincante(Jugador, Contrincante), responsable(Jugador, _, Contrincante)).
+                                                %responsable(Jugador, Accion, Contrincante).                                  
+responsable(Jugador, investiga(Jugador, Contrincante), Contrincante). */
+jugadorProfesional(Jugador):-
+    esJugador(Jugador),
+    forall(contrincante(Jugador, Contrincante), afecta(Jugador, Contrincante)).
+
+afecta(Jugador, Contrincante):-
+    ronda(_, Accion),
+    responsable(Jugador, Accion, Contrincante).
+
+responsable(Jugador, eliminado(Contrincante), Contrincante):-
+    contrincante(Jugador, Contrincante).
+
+responsable(Jugador, salva(Jugador, Contrincante), Contrincante).
 
 responsable(Jugador, atacado(Contrincante), Contrincante):-
+    contrincante(Jugador, Contrincante),
     mafioso(Jugador).
-    /*rol(Contrincante, Rol),
-    Rol \= mafia.*/ % Consideramos que es innecesario, pues entre miembros de la mafia no se atacan (deducido a partir de la base de conocimientos). Lo mismo ocurrirá con salva(Jugador, Contrincante).
- 
+
+responsable(Jugador, investiga(Jugador, Contrincante), Contrincante).
+
+
+/*
+afectado(Jugador, investiga(_, Jugador)).
+
+afectado(Jugador, eliminado(Jugador)).
+
+afectado(Jugador, salva(_, Jugador)).
+
+afectado(Jugador, atacado(Jugador)).*/
+
+/* responsable(Jugador, atacado(Contrincante), Contrincante):-
+    mafioso(Jugador).
+
 responsable(Jugador, investiga(Jugador, Contrincante), Contrincante):-
     ronda(_, investiga(Jugador, Contrincante)),
     %investigo(Jugador, Contrincante).
-    imbatible(Jugador).
+    imbatible(Jugador). */
 
 /* Funciona pero no sabemos por qué y si lo hacemos de otra forma, nos da rafa que no debería.
    Consideramos que imbatible/1 es similar a responsable/3, 
  */
 
-responsable(Jugador, eliminado(Contrincante), Contrincante):-
-    contrincante(Jugador, Contrincante).
+/* responsable(Jugador, eliminado(Contrincante), Contrincante):-
+    contrincante(Jugador, Contrincante). */
 
 /* responsable(Medico, salva(Medico, Jugador), Jugador):-
     ronda(_, salva(Medico, Jugador)). */
@@ -467,7 +427,7 @@ responsable(Jugador, eliminado(Contrincante), Contrincante):-
 % Los de la mafia son siempre profesionales 
 
 % b). 
-
+/*
 afectado(Jugador, Accion, OtroJugador):-
     responsable(OtroJugador, Accion, Jugador).
 
@@ -490,9 +450,10 @@ formaParteDeLaEstrategia(Accion):-
     afectado(Jugador, Accion, OtroJugador),
     jugoRonda(5, OtroJugador).
 
+*/
 
-
-
+estrategia([PrimeraAccion|RestoDeLasAcciones]):-
+    detective(rafa).
 
 
 
