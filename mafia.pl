@@ -163,15 +163,23 @@ end_tests(ganadores).
 % Integrante 2: Matías
 
 % a).
-
+/* -------------------->CORREGIDO (se puede descartar)<--------------------
 imbatible(Medico):-
     medico(Medico),
     forall(rondaAnteriorOIgualEnLaQueFueEliminado(Ronda, Medico), fueImbatible(Medico, Ronda)).
+*/
+imbatible(Medico):-
+    medico(Medico),
+    forall(salvo(Medico, Jugador), fueAtacado(Jugador)).
 
 imbatible(Detective):-
     detective(Detective),
     forall(mafioso(Jugador), investigo(Detective, Jugador)).
 
+fueAtacado(Jugador):-
+    ronda(_, atacado(Jugador)).
+
+/* -------------------->CORREGIDO (se puede descartar)<--------------------
 rondaAnteriorOIgualEnLaQueFueEliminado(Ronda, Medico):-
     ronda(RondaEliminado, eliminado(Medico)),
     ronda(Ronda, _),
@@ -185,8 +193,8 @@ jugadorAtacadoNoSalvadoPorOtroMedico(Jugador, Medico, Ronda):-
     ronda(Ronda, atacado(Jugador)),
     medico(OtroMedico),
     OtroMedico \= Medico, % No habrá problemas de inversibilidad, pues la variable Medico ya viene ligada y el predicado sólo se usa en fueImbatible/2.
-    not(ronda(Ronda, salvo(OtroMedico, Jugador))).
-
+    not(ronda(Ronda, salva(OtroMedico, Jugador))).
+*/
 medico(Jugador):-
     rol(Jugador, medico).
 
@@ -195,9 +203,12 @@ detective(Jugador):-
 
 mafioso(Jugador):-
     rol(Jugador, mafia).
-
+/* -------------------->CORREGIDO (se puede descartar)<--------------------
 salvo(Medico, Jugador, Ronda):-
-    ronda(Ronda, salva(Medico, Jugador)).
+    ronda(Ronda, salva(Medico, Jugador)).*/
+
+salvo(Medico, Jugador):-
+    ronda(_, salva(Medico, Jugador)).
 
 investigo(Detective, Jugador):-
     ronda(_, investiga(Detective, Jugador)).
