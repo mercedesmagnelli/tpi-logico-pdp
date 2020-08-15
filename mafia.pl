@@ -347,22 +347,6 @@ afectaA(Jugador, salva(_, Jugador)). %x
 afectaA(Jugador, investiga(_, Jugador)). %x
 
 afectaA(Jugador, atacado(Jugador)). %x
-%%%%%%%%%%%%%%%%% BORRAR %%%%%%%%%%%%%%%%%%%%%%%%%%
-/*
-involucrado(Jugador, atacado(Jugador)). %x
-
-involucrado(Jugador, investiga(Jugador, _)). %x
-
-involucrado(Jugador, investiga(_, Jugador)). %x
-
-involucrado(Jugador, salva(Jugador, _)). %x
-
-involucrado(Jugador, salva(_, Jugador)). %x
-
-involucrado(Jugador, eliminado(Jugador)). %x
-
-*/
-
 
 rondaPeligrosa(Ronda):-
     cantidadJugadoresEnJuegoEnRonda(Ronda, CantidadDePersonasEnJuego),
@@ -387,7 +371,6 @@ test(un_detective_que_no_jugo_una_ronda_peligrosa_no_vivio_el_peligro, fail):- v
 
 test(quienes_vivieron_el_peligro, set(Jugador = [lisa, homero, burns])):- vivioElPeligro(Jugador).
 
-
 end_tests(vivieron_el_peligro).
 
 % Ejercicio 5: estrategia.
@@ -396,9 +379,11 @@ end_tests(vivieron_el_peligro).
 
 jugadorProfesional(Jugador):-
     esJugador(Jugador),
-    forall(contrincante(Jugador, Contrincante), leHizo(Jugador, Contrincante)).
+    forall(contrincante(Jugador, Contrincante), leHizoAlgo(Jugador, Contrincante)).
 
-leHizo(Jugador, Contrincante):-
+leHizoAlgo(Jugador, Contrincante):-
+    ronda(Ronda, Accion),
+    sigueEnJuego(Ronda, Jugador), %va a estar relacionado con la accion siempre y cuando siga jugando 
     responsable(Jugador, Accion),
     afectaA(Contrincante, Accion).
 
