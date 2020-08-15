@@ -321,19 +321,48 @@ civil(Jugador):-
 
 jugoRonda(Jugador, Ronda):-
     ronda(Ronda, Accion),
+    sigueEnJuego(Ronda, Jugador),    
     involucrado(Jugador, Accion).
 
-involucrado(Jugador, atacado(Jugador)).
+involucrado(Jugador, Accion):-
+    responsable(Jugador, Accion).
 
-involucrado(Jugador, investiga(Jugador, _)).
+involucrado(Jugador, Accion):-
+    afectaA(Jugador, Accion). 
 
-involucrado(Jugador, investiga(_, Jugador)).
+responsable(Jugador, atacado(_)):-
+    mafioso(Jugador).
 
-involucrado(Jugador, salva(Jugador, _)).
+responsable(Jugador, eliminado(Contrincante)):-
+    contrincante(Jugador, Contrincante).
 
-involucrado(Jugador, salva(_, Jugador)).
+responsable(Jugador, investiga(Jugador, _)). %x
 
-involucrado(Jugador, eliminado(Jugador)).
+responsable(Jugador, salva(Jugador, _)). %x
+
+afectaA(Jugador, eliminado(Jugador)). %x
+
+afectaA(Jugador, salva(_, Jugador)). %x
+
+afectaA(Jugador, investiga(_, Jugador)). %x
+
+afectaA(Jugador, atacado(Jugador)). %x
+%%%%%%%%%%%%%%%%% BORRAR %%%%%%%%%%%%%%%%%%%%%%%%%%
+/*
+involucrado(Jugador, atacado(Jugador)). %x
+
+involucrado(Jugador, investiga(Jugador, _)). %x
+
+involucrado(Jugador, investiga(_, Jugador)). %x
+
+involucrado(Jugador, salva(Jugador, _)). %x
+
+involucrado(Jugador, salva(_, Jugador)). %x
+
+involucrado(Jugador, eliminado(Jugador)). %x
+
+*/
+
 
 rondaPeligrosa(Ronda):-
     cantidadJugadoresEnJuegoEnRonda(Ronda, CantidadDePersonasEnJuego),
@@ -356,15 +385,8 @@ test(un_detective_que_no_jugo_una_ronda_peligrosa_no_vivio_el_peligro, fail):- v
 
 % Consulta existencial (prueba de inversibilidad):
 
-test(quienes_vivieron_el_peligro, set(Jugador = [lisa, homero])):- vivioElPeligro(Jugador).
+test(quienes_vivieron_el_peligro, set(Jugador = [lisa, homero, burns])):- vivioElPeligro(Jugador).
 
-/*
-Aclaración con respecto al último test:
-La única ronda peligrosa es la ronda 4.
-La cantidad de personas en juego en la ronda 6 es 2, y la cantidad de civiles iniciales es 2. Luego, 2 no es 3 * 2. Entonces la ronda 6 no es peligrosa.
-La cantidad de personas en juego en la ronda 3 es 7, y la cantidad de civiles iniciales es 2. Luego, 7 no es 3 * 2. Entonces la ronda 3 no es peligrosa.
-Ergo, como Burns juega sólo en las rondas 3 y 6, Burns no vivió el peligro.
-*/
 
 end_tests(vivieron_el_peligro).
 
@@ -372,89 +394,33 @@ end_tests(vivieron_el_peligro).
 
 % a).
 
-/* jugadorProfesional(Jugador):-
-    esJugador(Jugador),
-    forall(contrincante(Jugador, Contrincante), responsable(Jugador, _, Contrincante)).
-                                                %responsable(Jugador, Accion, Contrincante).                                  
-responsable(Jugador, investiga(Jugador, Contrincante), Contrincante). */
 jugadorProfesional(Jugador):-
     esJugador(Jugador),
-    forall(contrincante(Jugador, Contrincante), afecta(Jugador, Contrincante)).
+    forall(contrincante(Jugador, Contrincante), leHizo(Jugador, Contrincante)).
 
-afecta(Jugador, Contrincante):-
-    ronda(_, Accion),
-    responsable(Jugador, Accion, Contrincante).
-
-responsable(Jugador, eliminado(Contrincante), Contrincante):-
-    contrincante(Jugador, Contrincante).
-
-responsable(Jugador, salva(Jugador, Contrincante), Contrincante).
-
-responsable(Jugador, atacado(Contrincante), Contrincante):-
-    contrincante(Jugador, Contrincante),
-    mafioso(Jugador).
-
-responsable(Jugador, investiga(Jugador, Contrincante), Contrincante).
-
-
-/*
-afectado(Jugador, investiga(_, Jugador)).
-
-afectado(Jugador, eliminado(Jugador)).
-
-afectado(Jugador, salva(_, Jugador)).
-
-afectado(Jugador, atacado(Jugador)).*/
-
-/* responsable(Jugador, atacado(Contrincante), Contrincante):-
-    mafioso(Jugador).
-
-responsable(Jugador, investiga(Jugador, Contrincante), Contrincante):-
-    ronda(_, investiga(Jugador, Contrincante)),
-    %investigo(Jugador, Contrincante).
-    imbatible(Jugador). */
-
-/* Funciona pero no sabemos por qué y si lo hacemos de otra forma, nos da rafa que no debería.
-   Consideramos que imbatible/1 es similar a responsable/3, 
- */
-
-/* responsable(Jugador, eliminado(Contrincante), Contrincante):-
-    contrincante(Jugador, Contrincante). */
-
-/* responsable(Medico, salva(Medico, Jugador), Jugador):-
-    ronda(_, salva(Medico, Jugador)). */
-
-% Los de la mafia son siempre profesionales 
-
-% b). 
-/*
-afectado(Jugador, Accion, OtroJugador):-
-    responsable(OtroJugador, Accion, Jugador).
+leHizo(Jugador, Contrincante):-
+    responsable(Jugador, Accion),
+    afectaA(Contrincante, Accion).
 
 estrategia(Estrategia):-
-    findall(Accion, formaParteDeLaEstrategia(Accion), Estrategia).
+    estrategiasPosibles(1, Estrategia),
+    length(Estrategia, CantidadAccionesEstrategia),
+    ultimaRonda(CantidadAccionesEstrategia).
+   
+estrategiasPosibles(Ronda, [PrimeraAccion]):-
+    ronda(Ronda, PrimeraAccion).   
 
-formaParteDeLaEstrategia(Accion):-
-    jugoRonda(Jugador, Ronda),
-    afectado(Jugador, Accion, OtroJugador),
-    jugoRonda(OtraRonda, OtroJugador), 
-    OtraRonda is Ronda - 1.
+estrategiasPosibles(Ronda, [PrimeraAccion,SegundaAccion|RestoDeLasAcciones]):-
+    %esJugador(Jugador),
+    ronda(Ronda, PrimeraAccion),
+    afectaA(Jugador, PrimeraAccion),
+    responsable(Jugador, SegundaAccion),
+    ProximaRonda is Ronda + 1,
+    estrategiasPosibles(ProximaRonda, [SegundaAccion|RestoDeLasAcciones]).
 
-formaParteDeLaEstrategia(Accion):-
-    jugoRonda(1, Jugador),
-    responsable(Jugador, Accion, OtroJugador),
-    jugoRonda(2, OtroJugador).
-
-formaParteDeLaEstrategia(Accion):-
-    jugoRonda(6, Jugador),
-    afectado(Jugador, Accion, OtroJugador),
-    jugoRonda(5, OtroJugador).
-
-*/
-
-estrategia([PrimeraAccion|RestoDeLasAcciones]):-
-    detective(rafa).
-
+ultimaRonda(Ronda):-
+    ronda(Ronda, _),
+    forall(ronda(OtraRonda, _), Ronda >= OtraRonda).
 
 
 
