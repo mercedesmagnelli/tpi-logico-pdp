@@ -96,7 +96,6 @@ test(perdio_es_completamente_inversible, set((Jugador, Ronda) = [(nick, 1) ,(raf
 :- end_tests(perdedores).
 
 
-
 % Ejercicio 2: contrincantes y ganador.
 
 % Integrante 1: Mercedes
@@ -111,7 +110,8 @@ sonContrincantes(Jugador, Contrincante):-
     rol(Contrincante, RolContrincante),
     RolContrincante \= mafia. 
 
-% b). %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESPONDER PREGUNTA TEORICA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% b)
 
 gano(Jugador):-
     esJugador(Jugador),
@@ -121,6 +121,11 @@ gano(Jugador):-
 
 esJugador(Jugador):-
     rol(Jugador, _).
+
+
+/* En este predicado gano/1 la inversibilidad puede relacionarse con el hecho de que el predicado esJugador/1 funciona 
+como generador de la variable Jugador. Esto me va a permitir utilizar el predicado not/1 sin tener algún problema
+con la inversibilidad, ya que el not/1 no es inversible. */
 
 % c). Casos de prueba
 
@@ -134,7 +139,11 @@ test(un_miembro_de_la_mafia_es_contrincante_de_un_jugador_que_no_es_miembro_de_l
 
 % Consulta existencial (prueba de inversibilidad):
 
-%falta probar inversibilidad -> muy largo 
+test(contrincante_es_completamente_inversible, set((Jugador, Contrincante) = [(bart, rafa), (bart, homero), (bart, burns), (bart, nick), (bart, hibbert), (bart, lisa), (tony, rafa), (tony, homero), (tony, burns), (tony, nick), (tony, hibbert), 
+(tony, lisa), (maggie, rafa), (maggie, homero), (maggie, burns), (maggie, nick), (maggie, hibbert), (maggie, lisa), (rafa, bart), (homero, bart), (burns, bart),(nick, bart), (hibbert, bart), (lisa, bart), (rafa, tony), (homero, tony),
+(burns, tony), (nick, tony), (hibbert, tony),(lisa, tony), (rafa, maggie), (homero, maggie), (burns, maggie), (nick, maggie), (hibbert, maggie), (lisa, maggie)])) :- contrincante(Jugador, Contrincante).
+
+
 :- end_tests(contrincantes).
 
 :-begin_tests(ganadores).
@@ -145,7 +154,7 @@ test(un_jugador_gana_cuando_no_pierde_ninguna_ronda_y_todos_sus_contrincantes_si
 
 test(un_jugador_no_gana_cuando_pierde_al_menos_una_ronda, fail) :- gano(nick).
 
-% rari: test(un_jugador_no_gana_cuando_no_pierde_ninguna_ronda_pero_sus_contrincantes_no_pierden, fail) :-gano().
+test(un_jugador_no_gana_cuando_no_pierde_ninguna_ronda_pero_sus_contrincantes_no_pierden, fail) :-gano(burns).
 
 % Consulta existencial (prueba de inversibilidad):
 
@@ -153,13 +162,12 @@ test(gano_es_inversible, set(Jugador = [maggie])) :- gano(Jugador).
 
 end_tests(ganadores).
 
-% falta justificar 
-
 % Ejercicio 3: imbatibles.
 
 % Integrante 2: Matías
 
 % a).
+
 imbatible(Medico):-
     medico(Medico),
     forall(salvo(Medico, Jugador, _), fueAtacado(Jugador)).
@@ -183,21 +191,21 @@ mafioso(Jugador):-
 investigo(Detective, Jugador, Ronda):-
     ronda(Ronda, investiga(Detective, Jugador)).
 
-/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MODIFICAR ESTA PARTE DEBIDO A QUE HAY NUEVOS PREDICADOS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/*
+El concepto de inversibilidad está presente en ciertos predicados y en otros no (especialmente el concepto de predicado completamente inversible). Para
+el caso de los predicados no completamente inversibles muchas veces no es necesario que posean dicha característica, ya que puede tratarse de un 
+predicado que se utiliza como condición de una regla en la que las variables ya están ligadas al "ingresar" al mismo. Para el caso de los predicados
+completamente inversibles, como lo es imbatible/1, obviamente esperamos de él esta característica.
 
-El concepto de inversibilidad está presente en ciertos predicados y en otros no (especialmente el concepto de predicado completamente inversible). Esto
-se da por ejemplo, con los predicados imbatible/1 y jugadorAtacadoNoSalvadoPorOtroMedico/3 respectivamente. Para el caso de los predicados no 
-completamente inversibles (como el último mencionado), muchas veces no es necesario que posean dicha característica, ya que como se explicó en la línea
-184, es un predicado que se utiliza como condición de una regla en la que las variables ya están ligadas al "ingresar" al mismo. En cambio, el predicado
-imbatible/1 sí es completamente inversible (obviamente que esperamos de él esta característica).
+¿Cómo se relaciona el principio de universo cerrado con la inversibilidad (no inversibilidad del predicado not/1 en este caso)?
 
-Para el caso del resto de las personas que no son imbatibles, se tiene en cuenta el principio de universo cerrado, tomando así como falso a todo aquello
-que no se pueda inferir como verdadero a partir la base de conocimientos. Relacionando este concepto con el de inversibilidad, se puede observar que por
-ejemplo no se podría saber cuáles son aquellas personas que no son imbatibles a través de la consulta not(imbatible(Jugador)). ya que la misma retornaría
-false. debido a que el predicado not/1 no es inversible. De hecho, al no figurar en la base de conocimientos aquellas personas que no son imbatibles, por
-el principio de universo cerrado, las mismas son infinitas (en realidad cualquier átomo o número por ejemplo que no sea un individuo perteneciente a
-la base de conocimientos no será imbatible), salvo que se cree un predicado específico para ello acotando el universo de las personas y así poder obtener
-aquellas que no son imbatibles. El mismo podría desarrollarse de la siguiente manera:
+Para el caso de los jugadores que NO son imbatibles, se tiene en cuenta el principio de universo cerrado, tomando así como falso a todo aquello que no
+se pueda inferir como verdadero a partir la base de conocimientos. Relacionando este concepto con el de inversibilidad, se puede observar que por 
+ejemplo no se podría saber cuáles son aquellos jugadores que NO son imbatibles a través de la consulta not(imbatible(Jugador)). ya que la misma
+retornaría false. debido a que el predicado not/1 NO es inversible. De hecho, al no figurar en la base de conocimientos aquellos jugadores que NO son
+imbatibles, por el principio de universo cerrado, los mismos son "infinitos" (en realidad cualquier átomo o número por ejemplo que no sea un individuo
+perteneciente a la base de conocimientos NO será imbatible), salvo que se cree un predicado específico para ello ACOTANDO el universo de los jugadores y
+así poder obtener aquellos que NO son imbatibles. El mismo podría desarrollarse de la siguiente manera:
 
 noImbatible(Jugador):-
     esJugador(Jugador),
@@ -317,8 +325,6 @@ esCivilODetective(Jugador):-
 civil(Jugador):-
     rol(Jugador, civil).
 
-%%%%%%%%%%%%%%%%%%%% VER SI NO SE PUEDEN USAR LOS PREDICADOS DEL PUNTO SIGUIENTE %%%%%%%%%%%%%%%%%%%%
-
 jugoRonda(Jugador, Ronda):-
     ronda(Ronda, Accion),
     sigueEnJuego(Ronda, Jugador),    
@@ -336,17 +342,17 @@ responsable(Jugador, atacado(_)):-
 responsable(Jugador, eliminado(Contrincante)):-
     contrincante(Jugador, Contrincante).
 
-responsable(Jugador, investiga(Jugador, _)). %x
+responsable(Jugador, investiga(Jugador, _)). 
 
-responsable(Jugador, salva(Jugador, _)). %x
+responsable(Jugador, salva(Jugador, _)). 
 
-afectaA(Jugador, eliminado(Jugador)). %x
+afectaA(Jugador, eliminado(Jugador)). 
 
-afectaA(Jugador, salva(_, Jugador)). %x
+afectaA(Jugador, salva(_, Jugador)). 
 
-afectaA(Jugador, investiga(_, Jugador)). %x
+afectaA(Jugador, investiga(_, Jugador)). 
 
-afectaA(Jugador, atacado(Jugador)). %x
+afectaA(Jugador, atacado(Jugador)). 
 
 rondaPeligrosa(Ronda):-
     cantidadJugadoresEnJuegoEnRonda(Ronda, CantidadDePersonasEnJuego),
@@ -383,19 +389,37 @@ jugadorProfesional(Jugador):-
 
 leHizoAlgo(Jugador, Contrincante):-
     ronda(Ronda, Accion),
-    sigueEnJuego(Ronda, Jugador), %va a estar relacionado con la accion siempre y cuando siga jugando 
+    sigueEnJuego(Ronda, Jugador), % Va a estar relacionado con la accion siempre y cuando siga jugando 
     responsable(Jugador, Accion),
     afectaA(Contrincante, Accion).
+
+% c). Casos de prueba para jugadorProfesional/1:
+
+:-begin_tests(jugadores_profesionales).
+
+% Consultas individuales:
+
+test(un_jugador_que_le_hizo_algo_a_todos_sus_contrincantes_es_profesional, nondet) :- jugadorProfesional(lisa).
+
+test(un_jugador_para_el_cual_no_todos_sus_contrincantes_no_se_vieron_afectados_por_sus_acciones_no_es_un_jugador_profesional, fail):- jugadorProfesional(bart).
+
+% Consulta existencial (prueba de inversibilidad):
+
+test(jugador_profesional_es_inversible, set(Jugador = [lisa, maggie])) :- jugadorProfesional(Jugador).
+
+end_tests(jugadores_profesionales).
+
+% b).
 
 estrategia(Estrategia):-
     estrategiasPosibles(1, Estrategia),
     length(Estrategia, CantidadAccionesEstrategia),
     ultimaRonda(CantidadAccionesEstrategia).
    
-estrategiasPosibles(Ronda, [PrimeraAccion]):-
-    ronda(Ronda, PrimeraAccion).   
+estrategiasPosibles(Ronda, [Accion]):-
+    ronda(Ronda, Accion).
 
-estrategiasPosibles(Ronda, [PrimeraAccion,SegundaAccion|RestoDeLasAcciones]):-
+estrategiasPosibles(Ronda, [PrimeraAccion, SegundaAccion|RestoDeLasAcciones]):-
     %esJugador(Jugador),
     ronda(Ronda, PrimeraAccion),
     afectaA(Jugador, PrimeraAccion),
@@ -407,24 +431,25 @@ ultimaRonda(Ronda):-
     ronda(Ronda, _),
     forall(ronda(OtraRonda, _), Ronda >= OtraRonda).
 
+% c). Casos de prueba para estrategia/1:
 
+:-begin_tests(estrategias).
 
+% Consultas individuales:
 
+test(una_cadena_de_acciones_encadenadas_que_se_suceden_en_orden_y_que_no_termina_en_la_ultima_ronda_no_es_una_estrategia, fail) :- estrategia([atacado(lisa), investiga(lisa, bart)]).
 
+test(una_cadena_de_acciones_encadenadas_que_se_suceden_en_orden_y_que_termina_en_la_ultima_ronda_es_una_estrategia, nondet) :- estrategia([investiga(rafa, lisa), investiga(lisa, bart), atacado(lisa), investiga(lisa, homero), eliminado(bart), atacado(burns)]).
 
+test(una_cadena_de_acciones_encadenadas_que_no_se_suceden_en_orden_sin_importar_donde_terminan_no_es_estrategia, fail):-estrategia([investiga(rafa, lisa), atacado(lisa),eliminado(bart), investiga(lisa, homero), atacado(burns), investiga(lisa, bart)]).
 
+test(una_serie_de_acciones_no_encadenadas_no_es_estrategia_sin_importar_donde_termine, fail) :- estrategia([salva(nick, nick), salva(hibbert, lisa)]).
 
+% Consulta existencial (prueba de inversibilidad):
 
+test(estrategia_es_inversible, set(Estrategia = [[atacado(lisa), investiga(lisa, bart), atacado(lisa), investiga(lisa, homero), eliminado(bart), atacado(burns)], 
+[salva(hibbert, lisa), investiga(lisa, bart), atacado(lisa), investiga(lisa, homero), eliminado(bart), atacado(burns)],
+[investiga(rafa, lisa), investiga(lisa, bart), atacado(lisa), investiga(lisa, homero), eliminado(bart), atacado(burns)]])):- estrategia(Estrategia).
 
-
-
-
-
-
-
-
-
-
-
-
+end_tests(estrategias).
 
